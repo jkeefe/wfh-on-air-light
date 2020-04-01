@@ -1,0 +1,22 @@
+{
+  "name": "wfh-on-air-light",
+  "version": "1.0.0",
+  "description": "Let my family know when my webcam is on",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jkeefe/wfh-on-air-light.git"
+  },
+  "author": "John Keefe",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jkeefe/wfh-on-air-light/issues"
+  },
+  "homepage": "https://github.com/jkeefe/wfh-on-air-light#readme",
+  "dependencies": {
+    "is-camera-on": "^2.0.0"
+  }
+}
