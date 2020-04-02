@@ -1,51 +1,85 @@
 const isCameraOn = require('is-camera-on')
 const fs = require ('fs')
-let saved_status = require('./saved_status')
+let full_project_path = "/Users/jkeefe/Code/jkeefe-github/wfh-on-air-light"
 
-let full_project_path = `/Users/jkeefe/Code/jkeefe-github/wfh-on-air-light`
-
-async function lights_action (file_name, new_currently) {
+// this is the camera-checking function, 
+// which runs itself every 5 seconds once started
+async function check_camera(light_status) {
+        
+    // new will equal old if nothing has changed
+    var new_light_status = light_status
     
-    // copy the python file to the circuit playground express
-    fs.copyFile(`${full_project_path}/circuitpython/${file_name}`, '/Volumes/CIRCUITPY/code.py', (err) => {
+    // actually check the camera status
+    var camera_status = await isCameraOn();
+    // console.log("Camera on? ", camera_status);
+    
+    // if camera is on, but light is off ...
+    if (camera_status && !light_status) {      
         
-        if (err) {
-            console.log("Copy failed.")
-        }
+        // turn lights on 
+        await set_lights("on")
         
-        // save the current status
-        saved_status.currently_on = new_currently;
-        var data = JSON.stringify(saved_status)    
-        fs.writeFile(`${full_project_path}/saved_status.json`, data, (err) => {
-            
-            if (err) {
-                console.log("JSON write failed")
-            }
-            
-            return true
-        })
+        // set light status anew
+        new_light_status = true
+    
+        // say so
+        // console.log("Turned light on") 
+         
+    }
+    
+    // if camera is off, but light is on ...
+    if (!camera_status && light_status) {
         
-    })
+        // turn lights off 
+        await set_lights("off")
+        
+        // set light status anew
+        new_light_status = false
+    
+        // say so
+        // console.log("Turned light off") 
+    }
+    
+    // Wait 5 seconds and call this function again
+    // passing the new_light_status
+    setTimeout(() => {
+        check_camera(new_light_status)
+    }, 5000)
     
 }
 
+
+// this function turns the lights "on" or "off" by copying
+// one of the two circuit python files to the circuit playground express
+function set_lights(set_to) {
+    return new Promise((resolve, reject) => {
+        
+        // copy the python file to the circuit playground express
+        fs.copyFile(`${full_project_path}/circuitpython/lights_${set_to}.py`, '/Volumes/CIRCUITPY/code.py', (err) => {
+            
+            if (err) {
+                // console.log("Copy failed: ", err)
+                resolve()
+            } else {
+                // console.log(`Lights set to ${set_to}`)
+                resolve()
+            }
+            
+        })
+        
+    })
+
+}
+
+// this function runs once at the start
 async function main () {
     
-    // status returns true if camera is on
-    var status = await isCameraOn();
-    console.log("Camera on? ", status);    
+    // start with lights off
+    await set_lights("off")
     
-    if (status && saved_status.currently_on == false) {      
-        // camera is newly on  
-        await lights_action('lights_on.py', true)   
-        console.log("Turned light on")   
-    }
-
-    if (!status && saved_status.currently_on == true) {
-        // camera is newly off
-        await lights_action('lights_off.py', false)
-        console.log("Turned light off")  
-    }
+    // start the camera checking, passing "false" for 
+    // for the current light status (because they're off)
+    check_camera(false)
     
 }
 
