@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/jkeefe/wfh-on-air-light#readme",
   "dependencies": {
+    "forever": "^2.0.0",
     "is-camera-on": "^2.0.0"
   }
 }
